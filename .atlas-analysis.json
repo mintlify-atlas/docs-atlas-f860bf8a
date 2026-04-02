@@ -1,0 +1,98 @@
+{
+  "projectType": "general",
+  "projectName": "d4rkAvatarOptimizer",
+  "projectDescription": "A Unity Editor tool that optimizes VRChat Avatar 3.0 by merging skinned meshes, materials, and shader properties to reduce draw calls and improve performance.",
+  "theme": "palm",
+  "primaryColor": "#5B6BFF",
+  "lightColor": "#E8EAFF",
+  "darkColor": "#1A1F3A",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Optimization Presets",
+            "pages": [
+              "presets/basic",
+              "presets/shader-toggles",
+              "presets/full"
+            ]
+          },
+          {
+            "group": "Settings Reference",
+            "pages": [
+              "settings/mesh-merging",
+              "settings/material-merging",
+              "settings/fx-layer",
+              "settings/cleanup"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/troubleshooting",
+              "guides/bug-reports",
+              "guides/for-shader-authors"
+            ]
+          },
+          {
+            "group": "Debug & Analysis",
+            "pages": [
+              "debug/debug-info",
+              "debug/material-merge-analyzer"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Merges skinned meshes to reduce draw calls and bone count",
+    "Merges materials with the same or different properties using shader injection",
+    "Shader Toggles: embeds mesh visibility logic into shaders to merge independently animated meshes",
+    "NaNimation Toggles: uses NaN bone scale to toggle merged meshes without shader changes",
+    "Optimizes FX Layer by merging simple toggle layers into direct blend trees",
+    "Removes unused components, blend shapes, bones, and game objects",
+    "Writes material properties as static values for GPU constant folding",
+    "Merges textures of the same dimensions into Texture2DArrays",
+    "Non-destructive: applies optimizations on upload or to a separate optimized copy",
+    "Preview mode shows mesh/material merge results and FX layer optimization results before applying"
+  ],
+  "publicApiSurface": [
+    "d4rkAvatarOptimizer component (MonoBehaviour, placed on avatar root or any ancestor)",
+    "Settings.ApplyOnUpload",
+    "Settings.WritePropertiesAsStaticValues",
+    "Settings.MergeSkinnedMeshes",
+    "Settings.MergeSkinnedMeshesWithShaderToggle",
+    "Settings.MergeSkinnedMeshesWithNaNimation",
+    "Settings.NaNimationAllow3BoneSkinning",
+    "Settings.MergeSkinnedMeshesSeparatedByDefaultEnabledState",
+    "Settings.MergeStaticMeshesAsSkinned",
+    "Settings.MergeDifferentPropertyMaterials",
+    "Settings.MergeSameDimensionTextures",
+    "Settings.MergeMainTex",
+    "Settings.OptimizeFXLayer",
+    "Settings.CombineApproximateMotionTimeAnimations",
+    "Settings.DisablePhysBonesWhenUnused",
+    "Settings.MergeSameRatioBlendShapes",
+    "Settings.MMDCompatibility",
+    "Settings.DeleteUnusedComponents",
+    "Settings.DeleteUnusedGameObjects",
+    "Settings.UseRingFingerAsFootCollider",
+    "ExcludeTransforms list",
+    "//d4rkAO:incompatible_shader shader comment directive",
+    "//d4rkAO:require_constant(_PropertyName) shader comment directive",
+    "//ifex CONDITION / //endex shader comment directives",
+    "Tools/d4rkpl4y3r/Why No Material Merge editor window",
+    "Tools/d4rkpl4y3r/Texture Compression Analyzer editor window"
+  ]
+}

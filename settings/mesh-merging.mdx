@@ -1,0 +1,80 @@
+---
+title: Mesh Merging
+description: Settings that control how skinned and static meshes are combined.
+---
+
+The optimizer merges skinned and static meshes to reduce draw calls and material count. The settings below control which meshes are eligible and what techniques are used.
+
+## Merge Skinned Meshes
+
+Merges skinned meshes that are always animated in the same way into a single mesh.
+
+- Meshes on different layers (e.g. `UIMenu`) are not merged with each other.
+- Meshes that are disabled and have no animation to enable them are deleted entirely.
+
+<Tip>
+  This is the safest merging option. It is enabled in all presets and has no side effects on avatar behavior.
+</Tip>
+
+## Use Shader Toggles
+
+Merges meshes even when their material properties are animated differently or when the meshes are toggled independently. Logic is injected into the shaders to handle visibility at runtime.
+
+<Warning>
+  Shader toggles do not work when shaders are blocked or when projectors are used. World effects such as wireframe shaders and screen-space ambient occlusion will not understand the toggles and will render merged meshes as always visible.
+</Warning>
+
+| Constraint | Detail |
+|---|---|
+| Forces on | Write Properties as Static Values |
+| Incompatible with | Tessellation and surface shaders |
+| Blocked shader behavior | All shader-toggled meshes appear visible |
+
+Make sure DPS/TPS penetrators are not included in shader toggles. The optimizer attempts to detect and exclude them automatically; if it fails, exclude them manually via the **Exclusions** list.
+
+## NaNimation Toggles
+
+Merges independently toggled meshes without modifying shaders. An extra bone is added per original mesh with a very low vertex weight; that bone's scale is animated to `NaN` to hide the mesh.
+
+<Note>
+  Unlike shader toggles, NaNimation toggles work correctly with blocked shaders and projectors.
+</Note>
+
+<Warning>
+  This option may cause name plates and chat boxes to appear inside your head or far above it. Disable NaNimation toggles if you observe this issue.
+</Warning>
+
+NaNimation toggles cannot merge meshes that use a WD ON workflow when they are off by default, unless the toggles are simple enough to be optimized by **Optimize FX Layer**.
+
+## Allow 3 Bone Skinning
+
+Permits NaNimation Toggles to apply to meshes that use 4 bone weights on some vertices. This reduces skinning quality to 3 effective bone weights on those vertices.
+
+To check which meshes are affected, open the **Debug Info** section and look at **Mesh Bone Weight Stats**. Any mesh showing index 3 being used will have reduced skinning quality if it has toggle animations.
+
+<Warning>
+  Only enable this if the skinning quality reduction is acceptable for your avatar. Check the **Mesh Bone Weight Stats** debug section before enabling.
+</Warning>
+
+## Keep Default Enabled State
+
+Prevents meshes that are enabled by default from being merged with meshes that are disabled by default, and vice versa.
+
+<Tip>
+  Enable this setting when using NaNimation toggles if you want your avatar to look correct when animations are blocked. With this disabled, all merged meshes will be visible when animations are blocked.
+</Tip>
+
+## Merge Static Meshes as Skinned
+
+Automatically converts static meshes to skinned meshes so they can be merged with other skinned meshes and have their materials merged.
+
+- Conversion only occurs if the static mesh has materials that can merge with a skinned mesh it would be combined with.
+- Meshes on the `UIMenu` layer are excluded, as they are typically used for computation.
+
+## Apply on Upload
+
+Automatically applies the optimizer to the avatar before uploading it to VRChat. The original avatar in your scene is not modified — this is a non-destructive operation.
+
+<Note>
+  You can also click **Create Optimized Copy** at any time to preview the result in the editor before uploading.
+</Note>

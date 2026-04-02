@@ -1,0 +1,111 @@
+---
+title: 'Shader Toggles preset'
+description: 'Extends Basic with shader-level mesh merging for avatars under 150k triangles using supported shaders like Poiyomi, SCSS, or ACLS.'
+sidebarTitle: 'Shader Toggles'
+icon: 'code-merge'
+keywords: ['shader toggles', 'avatar optimizer', 'mesh merging', 'Poiyomi', 'SCSS', 'ACLS', 'material merging']
+---
+
+The Shader Toggles preset builds on everything in the [Basic preset](/presets/basic) and adds shader-level logic that allows independently toggled meshes to be merged into a single draw call. This reduces draw calls further at the cost of a small increase in GPU shader complexity.
+
+<Note>
+  Keep your shaders **unlocked** before running this preset. Locked-in shaders compile to unique variants per material, which prevents the optimizer from combining them.
+</Note>
+
+## What it adds on top of Basic
+
+<Steps>
+  <Step title="Merges meshes toggled independently via shader logic">
+    Meshes that are animated or toggled separately from each other are merged into one. The optimizer injects toggle logic directly into the generated shaders so each mesh still appears and disappears correctly at runtime.
+  </Step>
+
+  <Step title="Merges materials with the same shader even when properties differ">
+    Materials that share a shader can be combined even if their property values differ. The differing values are written into a constant buffer, and a material ID stored in `uv.z` selects the correct values at runtime.
+  </Step>
+
+  <Step title="Applies generalized lock-in to generated shaders">
+    The optimizer runs a generalized equivalent of the shader "lock in" or "bake" step on every generated shader, enabling the GPU compiler to perform more [constant folding](https://en.wikipedia.org/wiki/Constant_folding). You should **disable** any built-in lock-in feature in your shader to avoid conflicts.
+  </Step>
+
+  <Step title="Forces Write Properties as Static Values">
+    This setting is automatically enabled. Uniform shader parameters are replaced with static values, for example `uniform float4 _Color;` becomes `static float4 _Color = float4(1, 0, 1, 1);`. This lets the shader compiler eliminate dead code branches and reduce ALU cost.
+  </Step>
+</Steps>
+
+## Best for
+
+<CardGroup cols={2}>
+  <Card title="Supported shaders" icon="wand-magic-sparkles">
+    Avatars using Poiyomi Toon, Silent Crosstone (SCSS), or ACLS get the most benefit. These shaders are designed to be compatible with the optimizer's shader injection.
+  </Card>
+  <Card title="Under 150k triangles" icon="chart-bar">
+    Avatars with a moderate triangle count and a moderate number of materials where further draw-call reduction meaningfully improves performance rank.
+  </Card>
+</CardGroup>
+
+## Caveats
+
+<Warning>
+  Read this section carefully before uploading. Some rendering features are incompatible with shader toggles.
+</Warning>
+
+<AccordionGroup>
+  <Accordion title="World projectors and wireframe shaders">
+    World effects that rely on projectors or shader replacement — such as wireframe overlays or screen-space ambient occlusion — do not understand the injected toggle logic. Merged meshes will appear as always visible to those effects.
+  </Accordion>
+
+  <Accordion title="Blocked shaders">
+    When a viewer has your shaders blocked (via **Action Menu → Options → Avatar → Fallback Shaders**), all merged meshes that rely on shader toggles become permanently visible. Check this in-game before uploading.
+  </Accordion>
+
+  <Accordion title="DPS / TPS / SPS penetrators">
+    The optimizer attempts to detect and automatically exclude penetrator meshes from shader toggle merging. If auto-detection misses any penetrator, add it to the **Exclusions** list manually before optimizing. Merged penetrators will always be visible to players with your shaders blocked, and may deform incorrectly.
+  </Accordion>
+
+  <Accordion title="Tessellation and surface shaders">
+    Meshes that use tessellation or surface shaders cannot be merged with this preset. They are left as separate meshes automatically.
+  </Accordion>
+</AccordionGroup>
+
+## Shader compatibility
+
+<Tabs>
+  <Tab title="Supported">
+    These shaders are designed to work with the optimizer's shader injection:
+
+    - [Poiyomi Toon](https://github.com/poiyomi/PoiyomiToonShader)
+    - [Silent Crosstone (SCSS)](https://gitlab.com/s-ilent/SCSS)
+    - [ACLS](https://booth.pm/ja/items/1779615)
+
+    Keep these shaders **unlocked** for the best merging results.
+  </Tab>
+  <Tab title="Unsupported">
+    Shaders that may produce pink or broken results after merging:
+
+    - Surface shaders
+    - Tessellation shaders
+    - Highly customized or proprietary shaders with non-standard uniform layouts
+
+    If your shader breaks, fall back to the [Basic preset](/presets/basic) or add the affected mesh to the **Exclusions** list.
+  </Tab>
+</Tabs>
+
+## Applying the preset
+
+<Steps>
+  <Step title="Unlock your shaders">
+    In your shader's material inspector, disable "Lock In", "Bake", or any equivalent feature. Locked shaders compile to unique variants that cannot be combined.
+  </Step>
+  <Step title="Add the optimizer component">
+    Select your avatar root GameObject and add the **d4rk Avatar Optimizer** component via **Add Component**.
+  </Step>
+  <Step title="Select the Shader Toggles preset">
+    Choose **Shader Toggles** from the preset dropdown in the component inspector.
+  </Step>
+  <Step title="Check for blocked-shader visibility">
+    After creating an optimized copy, test in-game with fallback shaders enabled to confirm no unwanted meshes are permanently visible.
+  </Step>
+  <Step title="Exclude any broken meshes">
+    Open the **Exclusions** foldout and add any transforms whose meshes look incorrect or should not be merged.
+  </Step>
+</Steps>

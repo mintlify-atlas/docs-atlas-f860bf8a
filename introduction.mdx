@@ -1,0 +1,71 @@
+---
+title: Introduction
+description: d4rkpl4y3r's VRChat Avatar 3.0 optimizer — reduce draw calls, materials, and mesh count for better performance.
+---
+
+# d4rkAvatarOptimizer
+
+d4rkAvatarOptimizer is a Unity Editor tool that dramatically improves VRChat avatar performance by automatically merging skinned meshes, materials, and shader properties — all without permanently changing your original avatar assets.
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/installation">
+    Add the optimizer to your project via VCC or UPM in minutes
+  </Card>
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Attach the component and optimize your avatar with a single click
+  </Card>
+  <Card title="Presets" icon="sliders" href="/presets/basic">
+    Choose the right optimization level for your avatar
+  </Card>
+  <Card title="Settings Reference" icon="gear" href="/settings/mesh-merging">
+    Fine-tune every optimization option
+  </Card>
+  <Card title="Troubleshooting" icon="wrench" href="/guides/troubleshooting">
+    Fix pink shaders, broken toggles, and other issues
+  </Card>
+  <Card title="For Shader Authors" icon="code" href="/guides/for-shader-authors">
+    Make your shaders compatible with the optimizer
+  </Card>
+</CardGroup>
+
+## What it does
+
+VRChat performance is heavily influenced by draw calls and material count. Every visible mesh and material slot on your avatar adds to the GPU workload. d4rkAvatarOptimizer analyses your avatar's animation controllers, materials, and meshes at build time and:
+
+- **Merges skinned meshes** that are always animated together, reducing draw calls
+- **Merges material slots** that use the same material, or even different materials via shader injection
+- **Optimizes the FX layer** by combining simple toggle layers into efficient direct blend trees
+- **Removes unused content** — bones, blend shapes, components, and GameObjects that do nothing
+- **Writes shader properties as static values** to enable GPU constant folding
+
+<Note>
+The optimizer is fully **non-destructive**. Your original avatar in the scene is never modified. All changes happen either on a separate optimized copy or at upload time.
+</Note>
+
+## Optimization presets
+
+Three presets cover the most common use cases:
+
+| Preset | Best for | Shader changes |
+|--------|----------|----------------|
+| **Basic** | Avatars over 150k triangles, or any avatar where stability is the priority | None |
+| **Shader Toggles** | Avatars under 150k triangles with supported shaders (Poiyomi, SCSS, etc.) | Yes — injects toggle logic |
+| **Full** | Maximum optimization; requires careful testing | Yes — most aggressive |
+
+See the [Presets](/presets/basic) section for a full breakdown of what each preset enables.
+
+## Performance impact
+
+After optimization, avatars typically see:
+
+- Significant reduction in skinned mesh renderer and draw call count
+- FX layer reduction from many layers to a single direct blend tree
+- Smaller avatar download size when baking blend shapes and static shader values
+
+The exact savings depend on how many meshes and materials your avatar has and which preset you use.
+
+## Requirements
+
+- **Unity**: 2022.3 or newer
+- **VRChat Avatar SDK**: 3.9.0 or newer
+- **VCC** (VRChat Creator Companion): recommended for installation and updates

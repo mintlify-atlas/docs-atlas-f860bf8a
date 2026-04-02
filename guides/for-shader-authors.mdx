@@ -1,0 +1,217 @@
+---
+title: For Shader Authors
+description: Guidelines to make your shaders compatible with d4rkAvatarOptimizer.
+---
+
+This page covers what you need to know to make your shaders work correctly with d4rkAvatarOptimizer.
+The optimizer parses and rewrites shader source code to merge meshes and materials. Certain patterns
+prevent it from doing this correctly.
+
+## Unsupported features
+
+The following features are detected by the analyzer. Any shader that uses them will be marked as
+incompatible and skipped entirely:
+
+- `UsePass` statements
+- `UNITY_INSTANCING_BUFFER_START` macros
+- Surface shaders
+- Tessellation shaders
+- Mismatched numbers of opening and closing curly braces (can occur when preprocessor macros open
+  or close braces)
+
+## Things that can break the optimizer silently
+
+The items in this section may not be caught by the analyzer. The optimizer may attempt to process
+the shader but produce incorrect results.
+
+In general, avoid using preprocessor macros wherever possible. They can hide critical code structure
+from the parser.
+
+### Property declarations
+
+Do not hide property declarations behind macros. The optimizer needs to see property declarations
+directly to correctly replace uniform values with static constants.
+
+<Warning>
+  **VERY BAD** — do not declare properties through macros:
+
+  ```c
+  #define MY_DECLARE_COLOR_PROPERTY(name) float4 name;
+  MY_DECLARE_COLOR_PROPERTY(_MyColor)
+  ```
+</Warning>
+
+A common use case is declaring texture properties with macros for platform portability. Instead of
+this:
+
+<Warning>
+  **DO NOT DO THIS** — texture property declared through a platform macro:
+
+  ```c
+  #ifdef SOME_PLATFORM_DEFINE
+      #define MY_DECLARE_TEXTURE_PROPERTY(name) sampler2D name; float4 name##_ST;
+  #else
+      #define MY_DECLARE_TEXTURE_PROPERTY(name) Texture2D name; SamplerState sampler##name; float4 name##_ST;
+  #endif
+  MY_DECLARE_TEXTURE_PROPERTY(_MyTexture)
+  ```
+</Warning>
+
+Use `#ifdef` blocks with direct declarations:
+
+```c
+// GOOD
+#ifdef SOME_PLATFORM_DEFINE
+    sampler2D _MyTexture;
+    float4 _MyTexture_ST;
+#else
+    Texture2D _MyTexture;
+    SamplerState sampler_MyTexture;
+    float4 _MyTexture_ST;
+#endif
+```
+
+The Unity macros `UNITY_DECLARE_TEX2D` and `UNITY_DECLARE_TEX2D_NOSAMPLER` are also supported, as
+they have hardcoded handling in the optimizer.
+
+### Geometry shader streams
+
+Do not pass geometry output streams to other functions. The optimizer needs to see `.Append()` calls
+directly inside the geometry shader function to inject its wrapper struct. For the same reason, do
+not hide `.Append()` calls behind macros.
+
+### Vertex data and function signatures
+
+The optimizer modifies vertex data structs and vertex/geometry/fragment function signatures to pass
+a combined mesh and material ID from `UV0.z` through the pipeline. This requires the optimizer to
+be able to read the full struct and parameter list.
+
+Do not hide struct member declarations or function parameters behind macros. Using `#ifdef` blocks
+inside a struct or parameter list is fine.
+
+<Warning>
+  **VERY BAD** — struct members and function parameters hidden behind macros:
+
+  ```c
+  #ifdef SOME_PLATFORM_DEFINE
+      #define FACING_PARAM(facing) , uint facing : SV_IsFrontFace
+      #define UV_PARAM(uvIndex) float2 uv##uvIndex : TEXCOORD##uvIndex;
+  #else
+      #define FACING_PARAM(facing)
+      #define UV_PARAM(uv)
+  #endif
+  struct VS_OUT
+  {
+      float4 pos : SV_POSITION;
+      float2 uv : TEXCOORD0;
+      UV_PARAM(uv1)
+      UV_PARAM(uv2)
+      UV_PARAM(uv3)
+  };
+  float4 frag(VS_OUT input FACING_PARAM(isFrontFace)) : SV_Target
+  { ... }
+  ```
+</Warning>
+
+Use `#ifdef` blocks directly inside the struct and function signature:
+
+```c
+// GOOD
+struct VS_OUT
+{
+    float4 pos : SV_POSITION;
+    float2 uv : TEXCOORD0;
+    #ifdef SOME_PLATFORM_DEFINE
+        float2 uv1 : TEXCOORD1;
+        float2 uv2 : TEXCOORD2;
+        float2 uv3 : TEXCOORD3;
+    #endif
+};
+float4 frag(VS_OUT input
+    #ifdef SOME_PLATFORM_DEFINE
+        , uint isFrontFace : SV_IsFrontFace
+    #endif
+) : SV_Target
+{ ... }
+```
+
+## Marking shaders as incompatible
+
+If your shader is not compatible with d4rkAvatarOptimizer, add the following comment anywhere in
+the shader source to explicitly opt out of optimization:
+
+```hlsl
+//d4rkAO:incompatible_shader
+```
+
+When this directive is present, the optimizer will not attempt to parse or modify the shader.
+**Write Properties as Static Values** will not run for that shader, which also means **Shader
+Toggles** and **Merge Different Property Materials** will not work for materials using it. All
+other optimizations (mesh cleanup, bone removal, FX layer merging, etc.) still apply.
+
+## Requiring constant properties
+
+If your shader has properties that must be inlined as literal constants to work correctly, mark
+them with:
+
+```hlsl
+//d4rkAO:require_constant(_PropertyName)
+```
+
+When the optimizer writes out the generated shader, it will define the preprocessor symbol
+`OPTIMIZER_ENABLED` if any required constant properties are present. You can use this symbol to
+conditionally compile code that depends on the inlined value.
+
+A practical example is a geometry shader that uses an instance count attribute. The attribute
+requires a compile-time constant, but `[instance(N)]` cannot accept a uniform variable at
+runtime:
+
+```hlsl
+//d4rkAO:require_constant(_GSInstanceCount)
+#if defined(OPTIMIZER_ENABLED)
+    [instance(_GSInstanceCount)]
+#else
+    [instance(32)]
+#endif
+void geom(triangle VS_OUT input[3], inout TriangleStream<PS_IN> triStream, uint instanceID : SV_GSInstanceID)
+{
+    #if !defined(OPTIMIZER_ENABLED)
+        if (instanceID >= _GSInstanceCount) return;
+    #endif
+    // [...]
+}
+```
+
+When the optimizer runs, it replaces `_GSInstanceCount` with the material's actual value and
+compiles the shader with `OPTIMIZER_ENABLED` defined, so the `[instance(...)]` attribute receives
+a literal integer.
+
+## Ifex conditions
+
+You can conditionally include or exclude sections of shader code using `//ifex` and `//endex`
+comments. These directives work anywhere in the shader file, including outside HLSL blocks, which
+makes them useful for excluding entire passes.
+
+```hlsl
+//d4rkAO:require_constant(_EnableOutlines)
+//ifex _EnableOutlines!=1
+Pass
+{
+    Name "Outline"
+    Tags { "LightMode" = "ForwardBase" }
+    // [...]
+}
+//endex
+```
+
+In this example, the entire outline pass is removed from the optimized shader when `_EnableOutlines`
+is not set to `1` on the material.
+
+Unlike Poiyomi's ifex implementation, d4rkAvatarOptimizer's ifex automatically handles animated
+properties and properties affected by **Merge Different Property Materials**. In both cases, all
+comparisons evaluate to false, because the value could differ between instances at runtime.
+
+This is why the example above also declares `_EnableOutlines` as a required constant: if the
+property were animated or varied across merged materials, the ifex condition would always be false
+and the outline pass would always be excluded. Marking it as a required constant ensures the
+optimizer inlines the actual value before evaluating the condition.

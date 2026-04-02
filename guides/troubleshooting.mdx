@@ -1,0 +1,73 @@
+---
+title: Troubleshooting
+description: Fix common issues like pink shaders, broken toggles, and nameplate problems.
+---
+
+<AccordionGroup>
+  <Accordion title="My shaders are pink or broken after optimization">
+    The optimizer modifies shader code to enable mesh and material merging. Some shaders use patterns
+    that the parser cannot handle, which results in broken or pink materials.
+
+    Try these fixes in order:
+
+    - Switch to the **Basic** preset. This preset does not touch shaders at all, so it cannot cause
+      shader-related breakage.
+    - Open the **Exclusions** foldout on the optimizer component and add the affected meshes. This
+      prevents the optimizer from modifying those meshes while still optimizing the rest of the avatar.
+    - Switch to a supported shader. The following shaders are known to work well with the optimizer:
+      - [Poiyomi Toon](https://github.com/poiyomi/PoiyomiToonShader)
+      - [Silent Crosstone (SCSS)](https://gitlab.com/s-ilent/SCSS)
+      - [ACLS](https://booth.pm/ja/items/1779615)
+
+    If you are a shader author, see [For Shader Authors](/guides/for-shader-authors) for guidance on
+    making your shaders compatible.
+  </Accordion>
+
+  <Accordion title="World projectors or wireframe shaders show my merged meshes as always visible">
+    This is expected behavior when using the **Shader Toggles** preset. World effects such as projectors,
+    wireframe shaders, and screen-space ambient occlusion work by replacing shaders or projecting onto
+    geometry. They do not understand the toggle logic injected into merged shaders, so all merged mesh
+    geometry appears visible to them.
+
+    To avoid this, switch to the **Basic** preset, which merges meshes without modifying shaders.
+  </Accordion>
+
+  <Accordion title="All merged meshes are visible when shaders are blocked">
+    When shaders are blocked in VRChat (via **Options → Avatar → Fallback Shaders** in the action menu),
+    the shader toggle logic injected by the optimizer does not run. This makes all merged meshes visible
+    at the same time.
+
+    To fix this:
+
+    - Switch to the **Basic** preset to avoid shader-based toggles entirely.
+    - Alternatively, enable **Keep Default Enabled State** on the optimizer. This stops meshes that are
+      enabled by default from being merged with meshes that are disabled by default, which reduces how
+      many meshes are affected when shaders are blocked.
+  </Accordion>
+
+  <Accordion title="DPS/TPS penetrators are showing through or always visible">
+    The optimizer tries to automatically detect DPS, TPS, and SPS penetrators and exclude them from
+    shader toggles. You can verify which meshes were detected by checking the **Penetrators** section
+    in the **Debug Info** foldout on the optimizer component.
+
+    If a penetrator is not listed there, it was not detected automatically. Add it manually to the
+    **Exclusions** foldout to prevent it from being merged with other meshes.
+  </Accordion>
+
+  <Accordion title="My nameplate or chat box position is wrong">
+    NaNimation Toggles work by adding an extra bone to each vertex with a very low weight and animating
+    that bone's scale to NaN to hide the mesh. In some cases this can affect how VRChat calculates the
+    avatar's bounding box, shifting the nameplate or chat box inside your head or far above it.
+
+    Disable **NaNimation Toggles** on the optimizer component to resolve this. The **Shader Toggles**
+    preset does not have this problem.
+  </Accordion>
+
+  <Accordion title="The optimizer is not running when I upload my avatar">
+    The optimizer only runs automatically on upload when **Apply on Upload** is enabled. Check that the
+    checkbox is ticked on the d4rkAvatarOptimizer component attached to your avatar root.
+
+    If **Apply on Upload** is enabled but the optimizer still does not seem to run, try clicking
+    **Create Optimized Copy** to run the optimizer manually and check for errors in the Unity console.
+  </Accordion>
+</AccordionGroup>

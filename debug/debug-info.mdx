@@ -1,0 +1,123 @@
+---
+title: Debug Info
+description: Understand the optimizer's debug output to diagnose merge issues and avatar analysis.
+---
+
+The **Debug Info** section of d4rkAvatarOptimizer surfaces detailed analysis of your avatar before optimization runs. Use it to understand why certain meshes or materials won't merge and to spot quality issues like crunch-compressed textures or suboptimal normal maps.
+
+<Note>
+  This info can be incorrect when using nondestructive tooling such as VRCFury or ModularAvatar, because those tools modify the avatar at build time — after the optimizer reads the scene.
+</Note>
+
+## Show Mesh & Material Merge Preview
+
+This foldout shows a preview of how meshes and materials will be grouped after optimization.
+
+- Resulting meshes are separated by blank lines.
+- Materials that merge together are **indented** beneath their target mesh.
+- The **S** button next to each group selects all materials in that group in the Project window, making it easy to inspect them.
+
+In the example view you might see three resulting meshes where `Body/FaceSkin` and `Body/Eyes` merge into one material slot while `Body/FaceAlpha` remains its own slot.
+
+<Note>
+  The preview can be wrong when VRCFury or ModularAvatar is present, because those tools alter the avatar at build time in ways the optimizer cannot see in advance.
+</Note>
+
+## Show FX Layer Merge Result
+
+This foldout lists every layer in your FX Layer and shows whether it can be optimized. Each layer is annotated with a VRChat performance rank icon:
+
+| Icon | Rank | Meaning |
+|------|------|---------|
+| Excellent | Excellent | Layer is useless and will be **deleted** |
+| Good | Good | Layer is a simple toggle and will be **merged into a direct blend tree** |
+| Medium | Medium | Layer has a motion time state and will be **approximated with a 1D blend tree** |
+| Very Poor | Very Poor | Layer **cannot be optimized** |
+
+Enable **Show Detailed Errors** to see the specific reasons the optimizer rejected a layer from being merged or deleted.
+
+<Note>
+  Like the merge preview, this analysis runs before VRCFury/ModularAvatar build time changes, so the results may not reflect the final uploaded avatar.
+</Note>
+
+## Debug Info subsections
+
+<AccordionGroup>
+  <Accordion title="Unparsable Materials">
+    Materials the optimizer could not parse. They block the mesh they belong to from merging with others and prevent **Write Properties as Static Values** from applying to them.
+  </Accordion>
+
+  <Accordion title="Unmergable Materials">
+    Materials that were parsed but use shader features the optimizer cannot handle (e.g. surface shaders, tessellation, ShaderLab property references, different keywords). They cannot merge with other materials that have different property values.
+  </Accordion>
+
+  <Accordion title="Unmergable Texture Materials">
+    Materials that cannot participate in texture merging (Texture2DArray). This is usually caused by shaders that declare `Texture2D` or `sampler2D` properties with a custom macro.
+  </Accordion>
+
+  <Accordion title="Crunched Textures">
+    Textures that use crunch compression. Crunch-compressed textures cannot be packed into `Texture2DArray`s, which prevents material merging when **Merge Same Dimension Textures** is enabled.
+  </Accordion>
+
+  <Accordion title="NonBC5 Normal Maps">
+    Textures used as normal maps that are not in BC5 format. BC5 provides higher quality than DXT5 or BC7 normal maps at the same VRAM cost. Use the [Texture Compression Analyzer](/debug/material-merge-analyzer) to convert these automatically.
+  </Accordion>
+
+  <Accordion title="Unmergable NaNimation by Animations">
+    Meshes that cannot use NaNimation toggles because they are missing either the on or off animation in at least one layer. This typically happens with a **WD ON** workflow. Switching to **WD OFF** is recommended to allow more optimizations.
+  </Accordion>
+
+  <Accordion title="Locked in Materials">
+    Materials where the optimizer detected an active "lock in" or "bake" feature. These must be unlocked before they can be merged (unless the property is marked **Rename Animated**, in which case they should stay locked).
+
+    The optimizer may not detect all lock-in forms, so check manually if needed.
+  </Accordion>
+
+  <Accordion title="Unlocked Materials with Rename Animated">
+    Materials where lock-in is **disabled** but at least one property is marked **Rename Animated**. The optimizer does not support Rename Animated, so animations relying on those properties will break. Lock in these materials before optimizing.
+  </Accordion>
+
+  <Accordion title="Unlocked Materials">
+    Materials where the optimizer detected that lock-in or baking is disabled. If **Write Properties as Static Values** is off, you need to lock in or bake these materials before running the optimizer.
+  </Accordion>
+
+  <Accordion title="Penetrators">
+    Meshes detected as DPS, TPS, or SPS penetrators. These are automatically excluded from optimization to prevent them from always being visible when shaders are blocked. If any penetrators are missing from this list, add them to the **Exclusions** list manually.
+  </Accordion>
+
+  <Accordion title="Same Ratio Blend Shapes">
+    Blend shapes that are always animated in the same ratio and will be merged. The first blend shape in each group is used as the base (shown as 100); the others get merged into it. The ratio values reflect how each shape scales relative to the base.
+  </Accordion>
+
+  <Accordion title="Mesh Bone Weight Stats">
+    Per-mesh breakdown of how many vertices have a non-zero weight at each bone weight index, plus the maximum and median weight per index. Meshes with vertices at index 3 will lose one effective bone weight if NaNimation toggles are enabled (unless **Allow 3 Bone Skinning** is enabled).
+  </Accordion>
+
+  <Accordion title="Phys Bone Dependencies">
+    For each PhysBone component, lists all components referencing its affected transforms and any animations that animate `m_Enabled`. PhysBones with exactly one SkinnedMeshRenderer in their list can have their enabled state driven by the mesh's toggle animations when **Disable Phys Bones When Unused** is on.
+  </Accordion>
+
+  <Accordion title="Unused Components">
+    Components that will be removed by **Delete Unused Components** — i.e. components that are always disabled and never enabled by any animation.
+  </Accordion>
+
+  <Accordion title="Always Disabled Game Objects">
+    Game objects that are disabled and have no animation that ever enables them. These are candidates for removal by **Delete Unused GameObjects**.
+  </Accordion>
+
+  <Accordion title="Material Swaps">
+    Material slots affected by material swap animations. These slots cannot be merged with other slots. Minimize material swap animations to maximize the optimizer's ability to merge materials.
+  </Accordion>
+
+  <Accordion title="Animated Material Property Paths">
+    Every animated material property along with the game object path it targets. Useful for auditing which properties are being driven by animations.
+  </Accordion>
+
+  <Accordion title="Game Objects with Toggle Animation">
+    Game objects that have a toggle animation in the FX Layer — i.e. their active state is animated.
+  </Accordion>
+
+  <Accordion title="Unmoving Bones">
+    Bones that are not moved by animations, eye look settings, PhysBone components, or constraints. These are candidates for removal by **Delete Unused GameObjects**.
+  </Accordion>
+</AccordionGroup>

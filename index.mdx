@@ -1,97 +1,61 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: d4rkAvatarOptimizer
+description: Automatically optimize your VRChat Avatar 3.0 — reduce draw calls, merge materials, and clean up unused content without touching your original files.
 ---
 
-## Setting up
+d4rkAvatarOptimizer is a Unity Editor tool by d4rkpl4y3r that boosts VRChat avatar performance by merging meshes, materials, and shader properties automatically at upload time.
 
-Get your documentation site up and running in minutes.
-
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
-
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<CardGroup cols={2}>
+  <Card title="Get started" icon="rocket" href="/installation">
+    Install via VCC and add the optimizer component to your avatar
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="Choose a preset" icon="sliders" href="/presets/basic">
+    Pick Basic, Shader Toggles, or Full based on your avatar's needs
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="Settings reference" icon="gear" href="/settings/mesh-merging">
+    Understand every option and fine-tune the optimization
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="Fix issues" icon="wrench" href="/guides/troubleshooting">
+    Resolve pink shaders, broken toggles, and other common problems
   </Card>
-</Columns>
+</CardGroup>
 
-## Create beautiful pages
+## How it works
 
-Everything you need to create world-class documentation.
+<Steps>
+  <Step title="Install via VCC">
+    Add the custom repository `https://d4rkc0d3r.github.io/vpm-repos/main.json` to VRChat Creator Companion, then add d4rkAvatarOptimizer to your project.
+  </Step>
+  <Step title="Add the component">
+    In Unity, add the **d4rk Avatar Optimizer** component to your avatar's root GameObject (or any ancestor).
+  </Step>
+  <Step title="Choose a preset">
+    Select **Basic** for safe optimizations, **Shader Toggles** for maximum draw call reduction with supported shaders, or **Full** for the most aggressive settings.
+  </Step>
+  <Step title="Upload or preview">
+    Click **Upload** — the optimizer runs automatically before upload. Or click **Create Optimized Copy** to preview results in the editor first.
+  </Step>
+</Steps>
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+## Key features
 
-## Need inspiration?
-
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+<CardGroup cols={2}>
+  <Card title="Mesh merging" icon="layer-group" href="/settings/mesh-merging">
+    Combine skinned meshes that animate together to slash draw calls
+  </Card>
+  <Card title="Material merging" icon="palette" href="/settings/material-merging">
+    Merge material slots — even across different shaders — using Texture2DArrays and cbuffers
+  </Card>
+  <Card title="FX layer optimization" icon="diagram-project" href="/settings/fx-layer">
+    Collapse toggle layers into a single direct blend tree for faster evaluation
+  </Card>
+  <Card title="Cleanup" icon="trash" href="/settings/cleanup">
+    Delete unused components, bones, blend shapes, and GameObjects automatically
+  </Card>
+  <Card title="Shader Toggles" icon="toggle-on" href="/presets/shader-toggles">
+    Merge independently-toggled meshes by injecting visibility logic into shaders
+  </Card>
+  <Card title="Debug tools" icon="magnifying-glass" href="/debug/debug-info">
+    Preview merge results and diagnose why materials or meshes can't be combined
+  </Card>
+</CardGroup>

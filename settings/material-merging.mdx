@@ -1,0 +1,66 @@
+---
+title: Material Merging
+description: Settings that control how materials and textures are combined.
+---
+
+The optimizer can merge materials and textures to reduce draw calls. The settings below control how aggressively materials are combined and what constraints apply.
+
+## Write Properties as Static Values
+
+Replaces uniform shader parameter declarations with static values baked directly into the shader source. This is similar to the "lock in" or "bake" feature found in some shaders.
+
+For example, `uniform float4 _Color;` becomes `static float4 _Color = float4(1, 0, 1, 1);`, enabling the shader compiler to perform more [constant folding](https://en.wikipedia.org/wiki/Constant_folding) and produce faster shaders.
+
+<Warning>
+  If your shader has its own lock-in or bake feature, disable it before using this option — except for materials that use the **Rename Animated** feature, which should stay locked in.
+</Warning>
+
+<Note>
+  This setting is forced on when **Use Shader Toggles** or **Merge Different Property Materials** is enabled.
+</Note>
+
+## Merge Different Property Materials
+
+Merges materials that share the same shader even when their property values differ. Differing values are written to a constant buffer, and a material ID is stored in `uv.z` to look up the correct value at runtime.
+
+**Cannot merge materials when:**
+
+- The shader is a surface shader or uses tessellation.
+- A differing property is used in ShaderLab state commands (e.g. `ZWrite [_ZWrite]`).
+- Materials have different keywords set.
+- The material slot is affected by a material swap animation.
+
+<Warning>
+  Do not use your shader's built-in lock-in or bake feature alongside this option when **Write Properties as Static Values** is enabled. Locked-in shaders compile to different underlying shaders per material and cannot be combined.
+</Warning>
+
+## Merge Same Dimension Textures
+
+Merges materials that use different textures when those textures share the same width, height, and compression format. A `Texture2DArray` is created from the originals.
+
+**Cannot merge materials when:**
+
+- The shader declares `Texture2D` or `sampler2D` properties using a custom macro (e.g. `#define CUSTOM_TEX2D(name) Texture2D name`).
+- The textures use crunch compression.
+
+<Tip>
+  Check the **Debug Info → Crunched Textures** list to identify textures that will block this merging. Re-exporting those textures without crunch compression will allow them to be merged.
+</Tip>
+
+## Merge MainTex
+
+Controls whether the optimizer merges materials that have different textures assigned to the `_MainTex` property.
+
+<Note>
+  Disable this option if you want your avatar to look correct when shaders are blocked. With `_MainTex` merging disabled, each material retains its own main texture and will display correctly under fallback shaders.
+</Note>
+
+## Merge Same Ratio Blend Shapes
+
+Merges blend shapes that are always animated in the same ratio across all animations.
+
+For example, if one animation sets `A` to 100 and `B` to 50, and another sets `A` to 50 and `B` to 25, then `A` and `B` are always in a 2:1 ratio and will be merged into a single blend shape.
+
+<Tip>
+  You can preview which blend shapes will be merged in the **Debug Info → Same Ratio Blend Shapes** section before running the optimizer.
+</Tip>

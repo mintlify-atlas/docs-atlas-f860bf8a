@@ -1,0 +1,78 @@
+---
+title: 'Basic preset'
+description: 'Safe, behavior-preserving optimizations for any avatar. Recommended for avatars over 150k triangles or when stability is paramount.'
+sidebarTitle: 'Basic'
+icon: 'shield-check'
+keywords: ['basic preset', 'avatar optimizer', 'safe optimization', 'blend shapes', 'skinned mesh']
+---
+
+The Basic preset applies only optimizations that do not change how your avatar looks or behaves. No shaders are modified, so it works with any shader.
+
+<Note>
+  Use this preset if your avatar is over 150k triangles, uses many materials, or if you have had issues with other presets. It is the safest starting point.
+</Note>
+
+## What it does
+
+<Steps>
+  <Step title="Removes unused components, blend shapes, and bones">
+    Any component that is permanently disabled and never enabled by an animation is deleted. Blend shapes and bones with zero weight on every vertex are also removed, reducing the mesh data that the GPU and CPU need to process.
+  </Step>
+
+  <Step title="Bakes non-animated blend shapes into the mesh">
+    Blend shapes that are never driven by an animation and have a non-zero default weight are baked directly into the mesh geometry. This eliminates the runtime cost of evaluating those blend shapes each frame.
+  </Step>
+
+  <Step title="Merges skinned meshes animated the same way">
+    Skinned meshes that are always toggled or transformed together are combined into a single mesh. Fewer meshes mean fewer draw calls and lower CPU overhead.
+  </Step>
+
+  <Step title="Merges duplicate material slots">
+    Material slots that reference the same material are collapsed into one. Material slots affected by material swap animations are left untouched.
+  </Step>
+
+  <Step title="Merges FX Layer toggles into a direct blend tree">
+    Simple on/off toggle layers in the FX Layer are combined into a single [direct blend tree](https://notes.sleightly.dev/dbt-combining/). This reduces the number of animator layers evaluated per frame.
+  </Step>
+
+  <Step title="Merges same-ratio blend shapes">
+    Blend shapes that are always animated in a fixed ratio to each other are collapsed into a single blend shape. For example, if blend shapes `A` and `B` are always driven at a 2:1 ratio, they are merged into one shape driving both.
+  </Step>
+</Steps>
+
+## Best for
+
+<CardGroup cols={2}>
+  <Card title="High-triangle avatars" icon="triangle">
+    Avatars over 150k triangles where merging too many meshes via shader logic could introduce GPU regressions.
+  </Card>
+  <Card title="Stability-first workflows" icon="lock">
+    Any situation where you need guaranteed compatibility regardless of which shaders you use.
+  </Card>
+</CardGroup>
+
+## Shader compatibility
+
+<Tip>
+  The Basic preset never touches shader code. It is safe with any shader, including custom or proprietary shaders that other presets may break.
+</Tip>
+
+Because no shader modifications are made, you will not see the draw-call reductions that the [Shader Toggles preset](/presets/shader-toggles) provides for independently toggled meshes. If your avatar is under 150k triangles and uses a supported shader, consider upgrading to that preset.
+
+## Applying the preset
+
+<Steps>
+  <Step title="Add the optimizer component">
+    Select your avatar root GameObject and add the **d4rk Avatar Optimizer** component via **Add Component**.
+  </Step>
+  <Step title="Select the Basic preset">
+    In the component inspector, choose **Basic** from the preset dropdown. The settings are applied automatically.
+  </Step>
+  <Step title="Validate with an optimized copy">
+    Click **Create Optimized Copy** to generate a non-destructive preview. Inspect the copy in the editor before uploading to confirm the result looks correct.
+  </Step>
+</Steps>
+
+<Warning>
+  Do not edit the optimized copy directly. It is regenerated each time you click **Create Optimized Copy** and will overwrite your changes.
+</Warning>

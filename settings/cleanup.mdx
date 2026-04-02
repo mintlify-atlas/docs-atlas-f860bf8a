@@ -1,0 +1,60 @@
+---
+title: Cleanup
+description: Settings that remove unused components, bones, and GameObjects.
+---
+
+The cleanup settings remove parts of the avatar that are never active at runtime, reducing upload size and runtime overhead.
+
+## Delete Unused Components
+
+Removes components that are inactive and can never be enabled by animations:
+
+1. All components that are turned off and never get enabled by any animation are deleted.
+2. PhysBone components whose dependencies were deleted in the previous step are then deleted.
+3. PhysBone colliders that are not referenced by any remaining PhysBone component are deleted.
+
+<Tip>
+  Check the **Debug Info → Unused Components** list to see exactly which components will be removed before running the optimizer.
+</Tip>
+
+## Delete Unused GameObjects
+
+Deletes GameObjects that have no used components and are not referenced by any other used component.
+
+This also applies to bones referenced by skinned meshes, provided the bones are not moved by animations, eye look settings, or PhysBone components. Children of deleted GameObjects are re-parented to their grandparent, and bone weights are transferred to the parent bone.
+
+<Note>
+  This setting pairs well with **Delete Unused Components** — running both together ensures that objects emptied by component deletion are also cleaned up.
+</Note>
+
+<Warning>
+  GameObjects moved by constraints or other non-standard systems may not be detected as "in use". Review the **Debug Info → Always Disabled Game Objects** list and use **Exclusions** if needed.
+</Warning>
+
+## Disable Phys Bones When Unused
+
+Automatically adds animation curves that disable PhysBone components when their associated mesh is hidden, and re-enable them when the mesh becomes visible again.
+
+This optimization applies only to PhysBone components that are used by exactly one `SkinnedMeshRenderer`. The curves are injected into the animations that already control the `SkinnedMeshRenderer`'s enabled state or its GameObject's active flag.
+
+<Tip>
+  You can see which PhysBones qualify in the **Debug Info → Phys Bone Dependencies** section. Any PhysBone listed with exactly one SkinnedMeshRenderer will be affected.
+</Tip>
+
+## Use Ring Finger as Foot Collider
+
+Moves the ring finger PhysBone collider to match the foot contact position. This allows you to interact with other players' PhysBones using your avatar's feet.
+
+<Note>
+  This setting only has an effect if your avatar has a ring finger collider configured. It does not add a new collider — it repositions the existing one.
+</Note>
+
+## Exclusions
+
+Prevents the optimizer from modifying a Transform and all of its children. Any Transform added to the exclusions list is left completely untouched by all optimizations.
+
+The number of excluded transforms is shown in parentheses next to the **Exclusions** foldout header, even when the list is collapsed.
+
+<Tip>
+  Use exclusions for meshes with unsupported shaders, DPS/TPS penetrators that were not auto-detected, or any part of the avatar that breaks when optimized. You can also use the **Basic** preset, which avoids shader modifications entirely.
+</Tip>

@@ -1,0 +1,71 @@
+---
+title: Installation
+description: Add d4rkAvatarOptimizer to your Unity project via VCC or the Unity Package Manager.
+keywords: ['installation', 'VCC', 'UPM', 'VRChat Creator Companion', 'setup']
+---
+
+## Requirements
+
+Before installing, confirm your project meets these requirements:
+
+- **Unity** 2022.3 or newer
+- **VRChat Avatar SDK** 3.9.0 or newer
+- **VRChat Creator Companion** (recommended)
+
+## Install via VCC
+
+This is the recommended method. VCC manages the package for you and lets you update with one click.
+
+<Steps>
+  <Step title="Add the custom repository">
+    Open VRChat Creator Companion, then navigate to **Settings → Packages → Add Repository**.
+
+    Paste the following URL and click **Add**:
+
+    ```text
+    https://d4rkc0d3r.github.io/vpm-repos/main.json
+    ```
+
+    <Tip>
+      You can also use the redirect link to open VCC automatically. Visit `https://d4rkc0d3r.github.io/vpm-repos/main_redirect.html` in your browser and allow it to open with VCC when prompted.
+    </Tip>
+  </Step>
+  <Step title="Confirm the repository">
+    VCC opens a dialog showing the repository details. Read the contents, then click **I understand, Add Repository** to confirm.
+  </Step>
+  <Step title="Add the package to your project">
+    Open your avatar project in VCC. Find **d4rkAvatarOptimizer** in the package list and click **Add** next to it.
+  </Step>
+</Steps>
+
+<Note>
+  The package targets Unity 2022.3 and requires `com.vrchat.avatars` version 3.9.0 or newer. VCC enforces these constraints automatically.
+</Note>
+
+## Install via UPM (manual fallback)
+
+If you are not using VCC, you can install directly through the Unity Package Manager using a Git URL.
+
+<Steps>
+  <Step title="Open the Package Manager">
+    In Unity, go to **Window → Package Manager**.
+  </Step>
+  <Step title="Add package from Git URL">
+    Click the **+** button in the top-left corner and select **Add package from git URL...**.
+  </Step>
+  <Step title="Enter the repository URL">
+    Enter the package URL from the repository and click **Add**. Unity downloads and installs the package.
+
+    <Warning>
+      Manual UPM installs do not receive automatic update notifications. You will need to check for new releases manually and update the Git URL to a newer version tag when available.
+    </Warning>
+  </Step>
+</Steps>
+
+## Update via VCC
+
+When a new version is available, VCC shows an **Update** button next to the package in your project's package list. Click it to update to the latest version.
+
+<Tip>
+  After updating, re-run any optimization passes on your avatars. Optimization behavior may change between versions as new features are added.
+</Tip>

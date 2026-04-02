@@ -1,0 +1,45 @@
+---
+title: Bug Reports
+description: How to collect diagnostic files and report issues on GitHub.
+---
+
+When the optimizer produces incorrect results or crashes, a set of diagnostic files is automatically
+saved to a trash bin folder during the optimization run. Attaching these files to your bug report
+gives the developer the information needed to reproduce and fix the issue.
+
+<Steps>
+  <Step title="Open the optimizer component settings">
+    In the Unity Inspector, select your avatar root and find the **d4rkAvatarOptimizer** component.
+    Click the **settings button** (gear icon) at the top of the component.
+  </Step>
+
+  <Step title="Open the trash bin folder in Explorer">
+    In the settings panel, click the button with the **open folder icon**. Your file explorer will
+    open with the trash bin folder in view and the `_TrashBin.zip` file already selected.
+  </Step>
+
+  <Step title="Review what the zip contains">
+    The `_TrashBin.zip` file includes everything generated during the last optimization run:
+
+    - Generated animation controllers
+    - Generated materials
+    - Generated shaders
+    - The optimizer log file (`_d4rkAvatarOptimizer.log`)
+
+    The log file is especially useful for diagnosing parse errors and optimization failures.
+  </Step>
+
+  <Step title="File a bug report on GitHub">
+    Go to the issue tracker at [https://github.com/d4rkc0d3r/d4rkAvatarOptimizer/issues](https://github.com/d4rkc0d3r/d4rkAvatarOptimizer/issues)
+    and open a new issue.
+  </Step>
+
+  <Step title="Attach the zip and describe the issue">
+    Attach the `_TrashBin.zip` file to the issue and include a clear description of the problem:
+
+    - What you expected to happen
+    - What actually happened (pink shaders, missing meshes, Unity errors, etc.)
+    - Which preset and settings you had enabled
+    - The avatar setup, if relevant (shader names, use of DPS/TPS, nondestructive tools, etc.)
+  </Step>
+</Steps>

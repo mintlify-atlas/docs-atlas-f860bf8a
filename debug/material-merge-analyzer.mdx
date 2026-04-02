@@ -1,0 +1,43 @@
+---
+title: Material Merge Analyzer
+description: Use the Why No Material Merge window and Texture Compression Analyzer to diagnose optimization issues.
+---
+
+d4rkAvatarOptimizer ships two diagnostic windows that help you understand exactly why materials won't merge and how to improve texture quality.
+
+## Why No Material Merge
+
+Open this window via **Tools > d4rkpl4y3r > Why No Material Merge**.
+
+The window explains precisely why two selected material slots cannot be merged by the optimizer, making it much faster to resolve blockers than reading through the full Debug Info section.
+
+### How to use it
+
+1. Open the window from the menu.
+2. Select your avatar in the scene.
+3. Choose two material slots from the dropdowns in the window.
+4. The window displays the exact reasons those slots are incompatible.
+
+### Avatar auto-selection
+
+The window has a toggle button that automatically selects the avatar when you click on objects in the scene. Enable it to avoid manually switching the avatar field as you inspect different meshes.
+
+<Note>
+  Results reflect the pre-build state of the avatar. Material incompatibilities introduced by VRCFury or ModularAvatar at build time will not appear here.
+</Note>
+
+## Texture Compression Analyzer
+
+Open this window via **Tools > d4rkpl4y3r > Texture Compression Analyzer**.
+
+This window audits the textures on your avatar and flags compression quality issues.
+
+### What it shows
+
+- **SSIM comparison** — a structural similarity score comparing the original texture against its compressed version, so you can quantify compression quality loss.
+- **BC5 normal map suggestions** — highlights textures used as normal maps that are not already in BC5 format. BC5 provides better quality than DXT5 or BC7 at the same VRAM size.
+- **Auto-convert button** — converts all flagged normal maps to BC5 in one click.
+
+<Tip>
+  Running the Texture Compression Analyzer after an initial optimize pass is a quick way to catch the remaining normal map quality issues surfaced under [NonBC5 Normal Maps](/debug/debug-info#nonbc5-normal-maps) in the Debug Info section.
+</Tip>

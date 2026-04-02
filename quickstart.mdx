@@ -1,80 +1,101 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quick start
+description: Add the d4rkAvatarOptimizer component to your avatar, choose a preset, and run your first optimization.
+keywords: ['quickstart', 'getting started', 'component', 'preset', 'optimize']
 ---
 
-## Get started in three steps
+## Add the component
 
-Get your documentation site running locally and make your first customization.
-
-### Step 1: Set up your local environment
-
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 2: Deploy your changes
-
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
-
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
-
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 3: Go live
-
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
-
-## Next steps
-
-Now that you have your docs running, explore these key features:
-
-<CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
-</CardGroup>
+<Steps>
+  <Step title="Select your avatar root">
+    In the Unity **Hierarchy**, select the root GameObject of your avatar — the one with the `VRC Avatar Descriptor` component. You can also place the component on any ancestor of the avatar root.
+  </Step>
+  <Step title="Add d4rkAvatarOptimizer">
+    In the **Inspector**, click **Add Component** and search for `d4rkAvatarOptimizer`. Select it to add the component.
+  </Step>
+</Steps>
 
 <Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
+  The component must be on the avatar root or an ancestor of it. Placing it on a child GameObject will have no effect.
 </Note>
+
+## Choose a preset
+
+Select a preset that matches your avatar's complexity.
+
+<CardGroup cols={3}>
+  <Card title="Basic" icon="shield" href="/presets/basic">
+    Safe for any avatar. Only applies optimizations that do not change visible behavior. Best for avatars over 150k triangles or when stability matters most.
+  </Card>
+  <Card title="Shader Toggles" icon="layers" href="/presets/shader-toggles">
+    Merges meshes that toggle independently by injecting logic into shaders. Best for avatars under 150k triangles using supported shaders like Poiyomi or Silent Crosstone.
+  </Card>
+  <Card title="Full" icon="bolt" href="/presets/full">
+    Most aggressive optimization. May change avatar behavior with blocked shaders or animations. Thorough in-editor testing is required before uploading.
+  </Card>
+</CardGroup>
+
+<Tip>
+  If you are unsure which preset to use, start with **Basic**. It is always safe and produces meaningful reductions in draw calls and material count.
+</Tip>
+
+## Run the optimization
+
+There are two workflows. Choose the one that fits your situation.
+
+<CardGroup cols={2}>
+  <Card title="Apply on Upload" icon="upload" href="/settings/mesh-merging#apply-on-upload">
+    Non-destructive. The optimizer runs automatically just before VRChat uploads your avatar. Your scene is never modified — the original stays intact.
+  </Card>
+  <Card title="Create Optimized Copy" icon="copy" href="/guides/troubleshooting">
+    Creates a separate optimized copy of the avatar in your scene and disables the original. Use this to test the result in the editor before uploading.
+  </Card>
+</CardGroup>
+
+### Apply on Upload
+
+This is the default workflow. The **Apply on Upload** toggle is enabled on the component by default.
+
+<Steps>
+  <Step title="Confirm Apply on Upload is enabled">
+    On the `d4rkAvatarOptimizer` component, verify that **Apply on Upload** is checked.
+  </Step>
+  <Step title="Upload via the VRChat SDK">
+    Open the VRChat SDK panel (**VRChat SDK → Show Control Panel**) and upload your avatar as normal. The optimizer runs automatically before the upload is sent.
+  </Step>
+</Steps>
+
+<Note>
+  Your original avatar in the scene is never changed. Every upload triggers a fresh optimization pass from the unmodified source.
+</Note>
+
+### Create Optimized Copy
+
+Use this workflow to inspect and validate the optimized avatar before uploading.
+
+<Steps>
+  <Step title="Click Create Optimized Copy">
+    On the `d4rkAvatarOptimizer` component, click the **Create Optimized Copy** button. The optimizer creates a new GameObject with the optimized avatar and disables the original.
+  </Step>
+  <Step title="Inspect the result">
+    Select the optimized copy in the Hierarchy and check the mesh and material counts in the Inspector. Enter Play Mode or use the VRChat SDK panel to preview the avatar.
+
+    <Warning>
+      Do not edit the optimized copy. It is generated from scratch each time you click the button, so any manual changes will be lost. Make all edits on the original avatar.
+    </Warning>
+  </Step>
+  <Step title="Upload or discard">
+    If everything looks correct, upload the optimized copy using the VRChat SDK. When you are done, delete the copy — it is not meant to be kept in your scene long-term.
+  </Step>
+</Steps>
+
+## What to expect after optimization
+
+After running the optimizer, a well-configured avatar typically shows:
+
+- **Fewer skinned mesh renderers** — meshes that are always animated together are merged into one
+- **Fewer material slots** — identical material slots are combined; with Shader Toggles enabled, materials sharing the same shader are merged even when their properties differ
+- **A leaner FX layer** — simple toggle layers are collapsed into a single direct blend tree
+- **Smaller upload size** — baked blend shapes and static shader values reduce asset size
+
+The exact savings depend on how many meshes and materials your avatar has, which preset you chose, and whether your shaders are compatible with the optimizer.

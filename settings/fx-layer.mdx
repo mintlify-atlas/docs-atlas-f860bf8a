@@ -1,0 +1,66 @@
+---
+title: FX Layer Optimization
+description: Settings that optimize the avatar's FX animator layer.
+---
+
+The optimizer can analyze and restructure the FX animator layer to reduce its complexity and improve runtime performance.
+
+## Optimize FX Layer
+
+Deletes layers that are considered useless and merges simple toggle layers into a single direct blend tree.
+
+### Useless layers (deleted)
+
+A layer is considered useless and is deleted if any of the following apply:
+
+- It has no states or sub-state machines.
+- It has 0 weight, is not affected by any layer weight control, and has no state behaviours.
+- It has no state behaviours and only animates bindings that do not exist on the avatar.
+
+### Toggle layers (merged into a direct blend tree)
+
+A layer qualifies as a toggle if all of the following are true:
+
+- It has no state behaviours.
+- It has exactly two states.
+- Both states have transitions pointing to the other state.
+- One state has a single transition; the other has one transition with one inverse condition per condition of the first state.
+- Transition conditions use bool `if` / `if not`, or int `greater x` / `less x + 1`.
+
+### Multi-toggle layers (merged into a direct blend tree)
+
+A layer qualifies as a multi-toggle if all of the following are true:
+
+- It has no state behaviours.
+- It has more than 2 states, all animating the exact same bindings.
+- No state has its own transitions.
+- Each state is reachable via an Any State transition with a single int equals condition matching the state index.
+- The same int parameter is used for all Any State transitions, and it is never used with a not-equals condition anywhere in the FX layer.
+
+<Tip>
+  You can preview which layers will be merged or deleted in the **Show FX Layer Merge Result** section. The VRChat performance rank icons indicate each layer's optimization status.
+</Tip>
+
+<Note>
+  This information can be inaccurate when using non-destructive tooling such as VRCFury or ModularAvatar, as those tools modify the avatar at build time.
+</Note>
+
+## Combine Motion Time Approximation
+
+Combines layers that have a single motion time state into the direct blend tree created by **Optimize FX Layer**.
+
+The original motion time is sampled at the standard radial puppet snap points (0, 25, 50, 75, 100) and the samples are used to construct a 1D blend tree approximation. Samples that do not improve the approximation by more than 1% are automatically discarded.
+
+The number of sample points can be adjusted in the global **Motion Time Approximation Sample Count** option.
+
+<Warning>
+  This is an approximation. Layers with highly non-linear motion time curves may not be reproduced accurately. Review the result with **Show FX Layer Merge Result** before uploading.
+</Warning>
+
+## MMD Compatibility
+
+Keeps blend shapes used by MMD animations from being removed or merged. It also prevents **Optimize FX Layer** from deleting or merging layers 0, 1, and 2, which are reserved for use by MMD worlds.
+
+<Note>
+  Enable this setting if your avatar is intended to be used in MMD worlds or if you use MMD-compatible blend shape naming on your meshes.
+</Note>

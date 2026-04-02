@@ -1,0 +1,106 @@
+---
+title: 'Full preset'
+description: 'Maximum optimization including experimental options. Requires thorough testing. Recommended for power users only.'
+sidebarTitle: 'Full'
+icon: 'rocket'
+keywords: ['full preset', 'avatar optimizer', 'NaNimation', 'delete unused GameObjects', 'experimental', 'maximum optimization']
+---
+
+The Full preset enables every available optimization, including experimental options that can change avatar behavior. It produces the smallest possible mesh and draw-call count but requires you to verify your avatar still works correctly after optimization.
+
+<Warning>
+  The Full preset can change avatar behavior in ways that are difficult to predict. Always create an optimized copy and test thoroughly before uploading. If anything breaks, switch to the [Shader Toggles](/presets/shader-toggles) or [Basic](/presets/basic) preset.
+</Warning>
+
+## What it adds on top of Shader Toggles
+
+<Steps>
+  <Step title="NaNimation Toggles">
+    Merges meshes that are toggled independently by injecting an extra bone per original mesh at very low weight. The optimizer animates that bone's scale to `NaN` to hide the mesh without modifying any shader code.
+
+    Unlike Shader Toggles, NaNimation does not break world projectors or blocked-shader visibility for the meshes it handles. However, it may shift nameplate and chatbox positions. If your nameplate ends up inside your head or too far above it, disable this option.
+
+    <Note>
+      NaNimation cannot merge meshes that use a WD ON workflow when they are disabled by default, unless the toggle is simple enough for **Optimize FX Layer** to handle it. Consider switching to a WD OFF workflow for maximum compatibility.
+    </Note>
+  </Step>
+
+  <Step title="Delete unused GameObjects">
+    Removes GameObjects that have no active components and are not referenced by any used component. Bones that are not moved by animations, eye-look settings, PhysBone components, or constraints are also deleted, with their weights transferred to the parent bone.
+  </Step>
+
+  <Step title="More aggressive mesh merging">
+    Enables **Merge Static Meshes as Skinned**, converting static MeshRenderers to SkinnedMeshRenderers so they can be merged with the rest of the avatar. Also enables **Merge Same Dimension Textures**, combining materials that use different textures by packing them into a `Texture2DArray` when their dimensions and compression format match.
+  </Step>
+
+  <Step title="More aggressive material merging">
+    All material merging options from Shader Toggles remain active. **Merge MainTex** is also enabled, allowing materials with different `_MainTex` textures to be merged. Disable this option if you want your avatar to remain legible when shaders are blocked, since fallback rendering depends on `_MainTex`.
+  </Step>
+</Steps>
+
+## Behavior changes to expect
+
+<AccordionGroup>
+  <Accordion title="NaNimation and blocked animations">
+    With **Keep Default Enabled State** disabled (which is the case in Full), meshes that are on by default can be merged with meshes that are off by default. If animations are blocked, all merged meshes become visible simultaneously. Enable **Keep Default Enabled State** if you need cleaner fallback behavior.
+  </Accordion>
+
+  <Accordion title="Nameplate and chatbox position">
+    NaNimation adds extra bones near the root of the avatar. In some avatar configurations this shifts the nameplate or chatbox position. If this happens, disable NaNimation Toggles and stay on the Shader Toggles preset.
+  </Accordion>
+
+  <Accordion title="4-bone skinning reduction">
+    If **Allow 3 Bone Skinning** is enabled, NaNimation can merge meshes that use 4-bone vertex weights by reducing them to 3 effective bone weights. This may cause subtle skinning artifacts on high-density meshes. Check **Mesh Bone Weight Stats** in the Debug Info section to identify affected meshes.
+  </Accordion>
+
+  <Accordion title="Texture arrays and crunch compression">
+    Crunch-compressed textures cannot be packed into a `Texture2DArray`. If your materials use crunch compression, those materials will not benefit from texture merging. The Debug Info section lists crunched textures under **Crunched Textures**.
+  </Accordion>
+</AccordionGroup>
+
+## Recommended testing checklist
+
+<Steps>
+  <Step title="Create an optimized copy">
+    Click **Create Optimized Copy** in the inspector. Never edit the copy — it is regenerated on each run.
+  </Step>
+  <Step title="Check the editor preview">
+    Use **Show Mesh & Material Merge Preview** to review which meshes and materials were combined. Use **Show FX Layer Merge Result** to confirm toggle layers merged as expected.
+  </Step>
+  <Step title="Test all toggles in Play mode">
+    Enable Play mode and step through every toggle, outfit swap, and expression to confirm they function correctly on the optimized copy.
+  </Step>
+  <Step title="Test in-game with blocked shaders">
+    Upload to VRChat and enable **Action Menu → Options → Avatar → Fallback Shaders**. Confirm no unintended meshes are permanently visible.
+  </Step>
+  <Step title="Check nameplate and chatbox position">
+    Ask another player to confirm your nameplate and chatbox appear at the correct position above your head.
+  </Step>
+  <Step title="Fall back if needed">
+    If anything is broken and cannot be fixed with exclusions, switch to [Shader Toggles](/presets/shader-toggles) or [Basic](/presets/basic).
+  </Step>
+</Steps>
+
+## Applying the preset
+
+<Steps>
+  <Step title="Unlock your shaders">
+    Disable "Lock In" or "Bake" in every material's shader inspector. The optimizer handles static value substitution itself.
+  </Step>
+  <Step title="Add the optimizer component">
+    Select your avatar root GameObject and add the **d4rk Avatar Optimizer** component via **Add Component**.
+  </Step>
+  <Step title="Select the Full preset">
+    Choose **Full** from the preset dropdown. All settings are configured automatically.
+  </Step>
+  <Step title="Review exclusions">
+    Open the **Exclusions** foldout and add any transforms — such as DPS/TPS penetrators not auto-detected, or meshes with custom shaders — that should be skipped.
+  </Step>
+  <Step title="Run the testing checklist">
+    Follow the testing checklist above before uploading.
+  </Step>
+</Steps>
+
+<Tip>
+  If you are unsure whether Full is right for your avatar, start with [Shader Toggles](/presets/shader-toggles). You can always switch to Full once you are comfortable with the results.
+</Tip>
